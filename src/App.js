@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { db } from './firebaseConnection';
 import { collection, addDoc, doc, getDoc } from 'firebase/firestore';
+import './app.css';
 
 function App() {
   const [titulo, setTitulo] = useState('');
