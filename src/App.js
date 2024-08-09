@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { db } from './firebaseConnection';
-import { collection, addDoc, doc, getDoc ,getDocs} from 'firebase/firestore';
+import { collection, addDoc, doc, getDoc ,getDocs, updateDoc, deleteDoc} from 'firebase/firestore';
 import './app.css';
 
 function App() {
   const [titulo, setTitulo] = useState('');
   const [autor, setAutor] = useState('');
+  const [idpost, setIdPost] = useState('');
+
 
   const [posts, setPosts] = useState([]);
 
@@ -30,7 +32,6 @@ function App() {
       await addDoc(collection(db, "posts"), {
         titulo: titulo,
         autor: autor,
-        creadtedAt: new Date()
       });
       console.log("DADOS REGISTRADO NO BANCO COM SUCESSO!");
       setTitulo('');
@@ -73,12 +74,54 @@ function App() {
       console.log("GEROU ERRO");
     });
 }
-      
+     
+
+  async function editaPost() {
+    alert('Função em desenvolvimento');
+    const docRef = doc(db, "posts", idpost);
+
+    await updateDoc(docRef, {
+      titulo: titulo,
+      autor: autor,
+    })
+      .then(() => {
+        console.log("Post atualizado com sucesso!");
+        setIdPost('');
+        setTitulo('');
+        setAutor('');
+      })
+      .catch((error) => {
+        alert("Erro ao atualizar o post: " + error);
+      });
+  }
+
+  async function excluirPost(id) {
+    if (window.confirm('Deseja realmente excluir o post ' + id + '?')) {
+      const docRef = doc(db, "posts", id);
+      await deleteDoc(docRef)
+
+        alert('Post excluido com sucesso!');
+        BuscarPost();
+      } else {
+        alert('Operação cancelada!');
+    }
+  }
+
   return (
+
+
     <div>
       <h1>React + Firebase !</h1>
     
       <div className="container">
+
+        <label>ID do Post</label>
+        <input
+          placeholder='Digite o ID do post'
+          value={idpost}
+          onChange={(e) => setIdPost(e.target.value)}
+        />
+
         <label>Titulo:</label>
         <textarea
           typeof="text"
@@ -99,12 +142,18 @@ function App() {
 
         <button onClick={handleAdd}>Cadastrar</button>
         <button onClick={BuscarPost}>Buscar</button>
+
+        <button onClick={editaPost}>Atualizar post</button>
+
+
         <ul>
           {posts.map((post) => {
             return (
               <li key={post.id}>
+                <strong>ID: {post.id}</strong> <br/>
                 <span>Titulo: {post.titulo}</span> <br/>
                 <span>Autor: {post.autor}</span> <br/>
+                <button onClick={() => excluirPost(post.id)}>Excluir</button>
               </li>
             );
           })}
