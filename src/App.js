@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { db } from './firebaseConnection';
-import { collection, addDoc, doc, getDoc ,getDocs, updateDoc, deleteDoc} from 'firebase/firestore';
+import { collection, addDoc, doc, getDoc ,getDocs, updateDoc, deleteDoc, writeBatch} from 'firebase/firestore';
 import './app.css';
 
 function App() {
@@ -94,6 +94,24 @@ function App() {
         alert("Erro ao atualizar o post: " + error);
       });
   }
+  
+  
+  async function handleDeleteAll() {
+    const postsRef = collection(db, "posts");
+    const snapshot = await getDocs(postsRef);
+
+    try {
+      const batch = writeBatch(db);
+      snapshot.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      await batch.commit();
+      console.log("TODOS OS POSTS FORAM DELETADOS!");
+      setPosts([]); // Limpar o estado dos posts
+    } catch (error) {
+      console.error("GEROU ERRO AO DELETAR: " + error);
+    }
+  }
 
   async function excluirPost(id) {
     if (window.confirm('Deseja realmente excluir o post ' + id + '?')) {
@@ -144,7 +162,7 @@ function App() {
         <button onClick={BuscarPost}>Buscar</button>
 
         <button onClick={editaPost}>Atualizar post</button>
-
+        <button onClick={handleDeleteAll}>Deletar Todos</button>
 
         <ul>
           {posts.map((post) => {
